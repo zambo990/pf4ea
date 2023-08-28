@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from timeit import default_timer as timer
 
 class Grid:
 
@@ -8,6 +9,8 @@ class Grid:
     # ricerca dei vertici adiacenti ad un vertice dato
 
     def __init__(self, width: int, height: int, obstacle_percentage=0.1, conglomeration_ratio=0.4):
+        start = timer()
+
         self.grid = np.zeros((height, width))
         self.height = height - 1
         self.width = width - 1
@@ -19,6 +22,12 @@ class Grid:
 
         # aggiungo gli ostacoli alla griglia
         self.__add_obstacles()
+
+        #salvo la lista di adiacenza all'interno di una variabile, in modo tale da doverla generare solo 1 volta
+        self.graph = self.get_G()
+
+        end = timer()
+        self.execution_time = end - start
 
     def __add_obstacles(self):
         obstacles = self.num_obstacles
@@ -126,8 +135,15 @@ class Grid:
         else:
             return np.sqrt(2)
 
-    # def get_path_cost(self, path):
-    #     cost = 0
-    #     for t in range(len(path) - 1):
-    #         cost += self.get_W(path[t], path[t + 1])
-    #     return cost
+    def get_path_cost(self, path):
+        cost = 0
+        for t in range(len(path) - 1):
+            cost += self.get_W(path[t], path[t + 1])
+        return cost
+
+    def get_num_waits(self, path):
+        count = 0
+        for t in range(len(path) - 1):
+            if path[t] == path[t + 1]:
+                count += 1
+        return count

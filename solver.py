@@ -5,22 +5,35 @@ from path import Path
 
 class Solver:
 
-    def __init__(self, istance: Instance, max_lenght): #TODO aggiungere il parametro heuristic
+    def __init__(self, istance: Instance, max_lenght, metric = 0):
         self.istance = istance
         self.max_length = max_lenght
         if self.max_length > self.__maximum_max_length(self.istance.agent_generator.max_length):
             self.max_length = self.__maximum_max_length(self.istance.agent_generator.max_length)
+        self.metric = metric
 
     def __maximum_max_length(self, agent_path_length):
         return agent_path_length + (self.istance.grid.grid.size - self.istance.grid.num_obstacles)
 
-    def __h(self, v: (int, int), goal: (int, int)):
+    #distanza diagonale
+    def __h(self, v: (int, int), goal: (int, int), select = 0):
+        if select == 0:
+            return self.__diagonal_distance(v, goal)
+        if select == 1:
+            return self.__chebyshev_distance(v, goal)
+
+    def __diagonal_distance(self, v: (int, int), goal: (int, int)):
         dx = abs(v[1] - goal[1])
         dy = abs(v[0] - goal[0])
         return dx + dy + (np.sqrt(2) - 2) * min(dx, dy)
 
+    def __chebyshev_distance(self, v: (int, int), goal: (int, int)):
+        dx = abs(v[1] - goal[1])
+        dy = abs(v[0] - goal[0])
+        return max(dx, dy)
+
     def solve(self):
-        if not self.__is_valid_start_stop():
+        if not self.is_valid_start_stop():
             return None, 0, 0
         return self.reach_goal()
 
@@ -30,14 +43,14 @@ class Solver:
 
         inserted_states = 1
         agents = self.istance.agent_generator
-        G = self.istance.grid.get_G()
+        G = self.istance.grid.graph
         closed = set()
         open = {(self.istance.init, 0)}
         g = {}
         P = {}
         f = {}
         g[(self.istance.init, 0)] = 0
-        f[(self.istance.init), 0] = self.__h(self.istance.init, self.istance.goal)
+        f[(self.istance.init), 0] = self.__h(self.istance.init, self.istance.goal, self.metric)
 
         # (parte 2): estrazione di uno stato da oper per controllare l'eventuale raggiungimento di goal
         while len(open) != 0:
@@ -80,7 +93,7 @@ class Solver:
                             if (n, t + 1) not in g or g[(v, t)] + self.istance.grid.get_W(v, n) < g[(n, t + 1)]:
                                 P[(n, t + 1)] = (v, t)
                                 g[(n, t + 1)] = g[(v, t)] + self.istance.grid.get_W(v, n)
-                                f[(n, t + 1)] = g[(n, t + 1)] + self.__h(n, self.istance.goal)
+                                f[(n, t + 1)] = g[(n, t + 1)] + self.__h(n, self.istance.goal, self.metric)
                             if (n, t + 1) not in open:
                                 open = open | {(n, t + 1)}
                                 inserted_states += 1
@@ -105,7 +118,7 @@ class Solver:
         path.reverse()
         return path
 
-    def __is_valid_start_stop(self):
+    def is_valid_start_stop(self):
         # caso in cui init coincide con la posizione iniziale di uno degli agenti pre-esistenti
         if self.istance.init in self.istance.agent_generator.starting_positions:
             return False
@@ -114,7 +127,7 @@ class Solver:
             if self.istance.goal == path[-1]:
                 return False
         # caso in cui init coincida con uno degli ostacoli generati casualmente
-        if self.istance.init not in self.istance.grid.get_G():
+        if self.istance.init not in self.istance.grid.graph:
             return False
 
         return True

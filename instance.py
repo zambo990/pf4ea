@@ -1,24 +1,27 @@
 from grid import Grid
 from agents import Agents
 import matplotlib.pyplot as plt
+from timeit import default_timer as timer
 
 class Instance:
 
     def __init__(self,
-                 width: int,
-                 height: int,
+                 grid: Grid,
                  init: (int, int),
                  goal: (int, int),
                  max_lenght_agents, #lunghezza massima dei percorsi casuali da generare per gli agenti pre-esistenti
-                 num_agents,
-                 obstacle_percentage=0.1,
-                 conglomeration_ratio=0.4):
+                 num_agents):
 
-        self.grid = Grid(width, height, obstacle_percentage, conglomeration_ratio)
+        start = timer()
+
+        self.grid = grid
         self.init = init
         self.goal = goal
         self.num_agents = num_agents
         self.agent_generator = Agents(self.num_agents, self.grid, max_lenght_agents)
+
+        end = timer()
+        self.execution_time = end - start
 
     def plot(self):
         self.grid.plot(show=False)
@@ -29,8 +32,8 @@ class Instance:
         #     plt.plot(pos[1] + 0.5, pos[0] + 0.5, 'x', markersize=18)
 
         # stampo init e goal sulla griglia
-        plt.plot(self.init[1] + 0.5, self.init[0] + 0.5, 'x', markersize=18, color='#ccc')
-        plt.plot(self.goal[1] + 0.5, self.goal[0] + 0.5, '+', markersize=18, color='#ccc')
+        plt.plot(self.init[1] + 0.5, self.init[0] + 0.5, 'o', markersize=18, color='#ccc')
+        plt.plot(self.goal[1] + 0.5, self.goal[0] + 0.5, 's', markersize=18, color='#ccc')
 
         plt.gca().set_prop_cycle(None)
         colors = ["red", "green", "blue", "purple", "orange", "pink", "cyan", "brown", "yellow"]
