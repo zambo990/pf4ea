@@ -16,17 +16,17 @@ def get_memory_usage():
 def get_record(width, height, obstacle_percentage, conglomeration_ratio, max_length, metric, time_limit, count):
     try:
         with (timeout.time_limit(time_limit)):
-            start = timer()
-
             istance = Instance(grid,
                                init,
                                goal,
                                max_length_agents,
                                num_agents)
             resolver = Solver(istance, max_length, metric)
-            path, num_expanded_states, inserted_states = resolver.solve()
 
+            start = timer()
+            path, num_expanded_states, inserted_states = resolver.solve()
             end = timer()
+
             execution_time = end - start
             memory_used = get_memory_usage()
 
