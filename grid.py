@@ -106,8 +106,8 @@ class Grid:
         plt.title(
             f'{self.grid.shape[1]} x {self.grid.shape[0]}\nObstacles: {self.num_obstacles} / {self.grid.size}')
         plt.pcolormesh(1 - self.grid, edgecolors='#777', linewidth=0.5, cmap='gray', vmin = 0, vmax = 1)
-        plt.xticks(range(0, self.grid.shape[1], 2))
-        plt.yticks(range(0, self.grid.shape[0], 2))
+        plt.xticks(range(0, self.grid.shape[1], 1))
+        plt.yticks(range(0, self.grid.shape[0], 1))
         ax = plt.gca()
         ax.invert_yaxis()
         ax.set_aspect('equal')
@@ -116,7 +116,7 @@ class Grid:
         for tick in ax.yaxis.get_majorticklabels():
             tick.set_verticalalignment("top")
         if show:
-            plt.show()
+            plt.show(block=False)
 
     def get_G(self):
         adj = {}

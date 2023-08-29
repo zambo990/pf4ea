@@ -25,6 +25,7 @@ class Instance:
         self.execution_time = end - start
 
     def plot(self):
+        plt.close('all')
         self.grid.plot(show=False)
         plt.title(
             f'{self.grid.grid.shape[1]} x {self.grid.grid.shape[0]}\nObstacles: {self.grid.num_obstacles} / {self.grid.grid.size}')
@@ -44,9 +45,10 @@ class Instance:
                 if t < len(path):
                     plt.text(path[t][1] + 0.5, path[t][0] + 0.5, t, fontsize=12, color=color, ha='center', va='center')
 
-        plt.show()
+        plt.show(block=False)
 
     def plot_instant(self, t, solution: Path):
+        plt.close('all')
         self.grid.plot(show=False)
         plt.title(
             f'{self.grid.grid.shape[1]} x {self.grid.grid.shape[0]} - Obstacles: {self.grid.num_obstacles} / {self.grid.grid.size}\nIstant={t}')
@@ -65,4 +67,4 @@ class Instance:
 
         plt.plot(solution[t][1] + 0.5, solution[t][0] + 0.5, 'x', markersize=18)
 
-        plt.show()
+        plt.show(block=False)

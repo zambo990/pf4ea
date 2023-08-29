@@ -123,7 +123,7 @@ if __name__ == '__main__':
             #grid.print()
             istance.plot()
 
-            print("** Riassunto dell'istanza inserita: **")
+            print("\n** Riassunto dell'istanza inserita: **")
             print("Dimensione griglia: ", width, " x ", height)
             print("Numero di celle attraversabili: ", width*height-int(width*height*obstacle_percentage))
             print("Percentuale di conglomerazione degli ostacoli: ", conglomeration_ratio, "%")
@@ -155,13 +155,6 @@ if __name__ == '__main__':
             memory_used = get_memory_usage()
             print(f"Memoria utilizzata: {memory_used / (1024 * 1024):.2f} MB")
 
-            if path is not None:
-                t = 0
-                while t != -1:
-                    t = read_number("\nInserire l'istante di cui si desidera visualizzare la situazione della griglia\n"
-                                    "Oppure digitare -1 per terminare il programma: ", -1, len(path)-1, int)
-                    istance.plot_instant(t, path)
-
     except timeout.TimeoutException:
         print("Percorso: timeout, superato il tempo massimo per l'elaborazione")
         print("Numero di stati espansi: 0")
@@ -176,4 +169,9 @@ if __name__ == '__main__':
         print(f"Memoria utilizzata: {memory_used / (1024 * 1024):.2f} MB")
         sys.exit(2)
 
-
+    if path is not None:
+        t = 0
+        while t != -1:
+            t = read_number("\nInserire l'istante di cui si desidera visualizzare la situazione della griglia\n"
+                            "Oppure digitare -1 per terminare il programma: ", -1, len(path) - 1, int)
+            istance.plot_instant(t, path)
