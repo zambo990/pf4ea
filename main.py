@@ -39,8 +39,11 @@ def read_cell(messaggio, grid: Grid):
         cell = cell.replace(" ", "")
         pattern = r"\(\s*\d+\s*,\s*\d+\s*\)"
         if re.match(pattern, cell):
-            x = int(cell[1])
-            y = int(cell[3])
+            cell = cell.replace("(", "")
+            cell = cell.replace(")", "")
+            index = cell.find(",")
+            x = int(cell[0:index])
+            y = int(cell[(index + 1):len(cell)])
             if (x, y) in grid.get_G():
                 return (x, y)
             else:
@@ -80,17 +83,17 @@ if __name__ == '__main__':
         time_limit = read_number("Inserire il tempo massimo, in secondi, accettabile per calcolare la soluzione del problema: ", 0, None, int)
 
     else:
-        width = 3
-        height = 2
-        obstacle_percentage = 0.2
+        width = 5
+        height = 4
+        obstacle_percentage = 0.3
         conglomeration_ratio = 0.4
         grid = Grid(width, height, obstacle_percentage, conglomeration_ratio)
 
         init = grid.get_random_empty_cell()
         goal = grid.get_random_empty_cell()
 
-        max_length_agents = 1
-        num_agents = 1
+        max_length_agents = 2
+        num_agents = 3
 
         max_length = 1000
         metric = 0
@@ -106,7 +109,6 @@ if __name__ == '__main__':
                                goal,
                                max_length_agents,
                                num_agents)
-
             # parametro metric:
             # 0: distanza Euclidea
             # 1: distanza di Chebyshev

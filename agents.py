@@ -15,7 +15,6 @@ class Agents:
         self.build_paths()
 
     def __build_path(self) -> Path:
-        print("genero percorso")
         path = Path([self.__get_new_random_start()])
         if self.max_length == 0:
             length = 0
@@ -50,9 +49,10 @@ class Agents:
                                 neighbors.remove(cell)
 
             # elimino dalle celle adiacenti, tutte le celle già percorse, in modo da evitare backtracking
-            for el in path:
-                if el in neighbors:
-                    neighbors.remove(el)
+            for p in path:
+                for el in neighbors:
+                    if el[0] == p:
+                        neighbors.remove(el)
 
             if len(neighbors) != 0:
                 index = np.random.choice(range(len(neighbors)))
@@ -63,9 +63,10 @@ class Agents:
                 return path
         return path
 
-    def __get_new_random_start(self) -> (int, int):
+    def __get_new_random_start(self) -> (int, int): #metodo di fatto inutile, lasciato così in quanto risultato di re-factoring del codice
         cell = self.grid.get_random_empty_cell()
-        self.grid.empty_cells.remove(cell)
+        #self.grid.empty_cells.remove(cell)
+        #del self.grid.empty_cells[cell]
         return cell
 
     def build_paths(self):

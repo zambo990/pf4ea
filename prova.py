@@ -1,3 +1,7 @@
 if __name__ == '__main__':
-    lista = [[(2, 2), (1, 1), (0, 0), (1, 1)]]
-    print(lista[0][0])
+    cell = "(11, 13)"
+    cell = cell.replace("(", "")
+    cell = cell.replace(")", "")
+    index = cell.find(",")
+    int(cell[0:(index)])
+    int(cell[(index + 1):len(cell)])

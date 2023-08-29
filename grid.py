@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 import matplotlib.pyplot as plt
 from timeit import default_timer as timer
@@ -11,11 +13,7 @@ class Grid:
     def __init__(self, width: int, height: int, obstacle_percentage=0.1, conglomeration_ratio=0.4):
         start = timer()
 
-        self.grid = np.zeros((height, width))
-        self.empty_cells = []
-        for i in range(height):
-            for j in range(width):
-                self.empty_cells += [(i, j)]
+        self.empty_cells = self.__get_empty_grid(width, height)
         self.height = height - 1
         self.width = width - 1
         self.obstacle_ratio = obstacle_percentage
@@ -33,32 +31,33 @@ class Grid:
         end = timer()
         self.execution_time = end - start
 
-    
+    def __get_empty_grid(self, width, height):
+        grid = {}
+        for i in range(height):
+            for j in range(width):
+                grid[(i, j)] = 0
+        return grid
     def __add_obstacles(self):
         obstacles = self.num_obstacles
         while obstacles > 0:
             (x, y) = self.get_random_empty_cell()
-            self.grid[(x, y)] = 1
-            self.empty_cells.remove((x,y))
+            del self.empty_cells[(x, y)]
             obstacles -= 1
             obstacles = self.__add_conglomerated_obstacles((x,y), obstacles)
 
     def get_random_empty_cell(self):
-        index = np.random.randint(0, len(self.empty_cells))
-        return self.empty_cells[index]
+        return random.choice(list(self.empty_cells.keys()))
 
 
     def __add_conglomerated_obstacles(self, actual_cell, obstacles: int):
         adjacent_cells = self.get_empty_adiacent_cells(actual_cell)
         while (obstacles > 0 and self.__conglomeration_probability() and
                len(adjacent_cells) > 0):
-            adjacent_cells = list(set(adjacent_cells)) #elimino elementi duplicati
-            index = np.random.randint(0, len(adjacent_cells))
-            selected_adiacent = adjacent_cells.pop(index)
-            self.grid[selected_adiacent] = 1
-            self.empty_cells.remove(selected_adiacent)
+            selected_adjacent = random.choice(list(adjacent_cells.keys()))
+            del adjacent_cells[selected_adjacent]
+            del self.empty_cells[selected_adjacent]
             obstacles -= 1
-            adjacent_cells += self.get_empty_adiacent_cells(selected_adiacent)
+            adjacent_cells.update(self.get_empty_adiacent_cells(selected_adjacent))
         return obstacles
 
 
@@ -86,34 +85,38 @@ class Grid:
                 cells.append((actual_cell[0] - 1, actual_cell[1] + 1))
             if actual_cell[0] < self.height and actual_cell[1] < self.width: #prendo la cella a sud-est
                 cells.append((actual_cell[0] + 1, actual_cell[1] + 1))
-        return cells
+        return dict.fromkeys(cells)
 
     def get_empty_adiacent_cells(self, actual_cell, diagonals = False):
         cells = self.get_adjacent_cells(actual_cell, diagonals)
-        empty_cells = []
-        for el in cells:
+        empty_cells = {}
+        for el in list(cells.keys()):
             if el in self.empty_cells:
-                empty_cells.append(el)
+                empty_cells[el] = None
         return empty_cells
 
     def __conglomeration_probability(self):
         return (np.random.random_sample(1) < self.conglomeration_ratio)[0]
 
-    def print(self): #usato solo per fare debugging
-        for i in range(self.grid.shape[0]):
-            for j in range(self.grid.shape[1]):
-                if self.grid[i][j] == 0:
-                    print('.', end='')
-                else:
-                    print('█', end='')
-            print()
+    # def print(self): #usato solo per fare debugging
+    #     for i in range(self.grid.shape[0]):
+    #         for j in range(self.grid.shape[1]):
+    #             if self.grid[i][j] == 0:
+    #                 print('.', end='')
+    #             else:
+    #                 print('█', end='')
+    #         print()
 
     def plot(self, show=True):
+        grid = np.ones((self.height + 1, self.width + 1))
+        for (x, y) in list(self.empty_cells.keys()):
+            grid[x, y] = 0
+
         plt.title(
-            f'{self.grid.shape[1]} x {self.grid.shape[0]}\nObstacles: {self.num_obstacles} / {self.grid.size}')
-        plt.pcolormesh(1 - self.grid, edgecolors='#777', linewidth=0.5, cmap='gray', vmin = 0, vmax = 1)
-        plt.xticks(range(0, self.grid.shape[1], 1))
-        plt.yticks(range(0, self.grid.shape[0], 1))
+            f'{grid.shape[1]} x {grid.shape[0]}\nObstacles: {self.num_obstacles} / {grid.size}')
+        plt.pcolormesh(1 - grid, edgecolors='#777', linewidth=0.5, cmap='gray', vmin = 0, vmax = 1)
+        plt.xticks(range(0, grid.shape[1], 1))
+        plt.yticks(range(0, grid.shape[0], 1))
         ax = plt.gca()
         ax.invert_yaxis()
         ax.set_aspect('equal')
@@ -126,13 +129,10 @@ class Grid:
 
     def get_G(self):
         adj = {}
-        for i in range(self.grid.shape[0]):
-            for j in range(self.grid.shape[1]):
-                # non creo liste di adiacenza per gli ostacoli
-                if self.grid[i, j] == 0:
-                    empty_neighbors = self.get_empty_adiacent_cells((i, j), True)
-                    empty_neighbors = [(n, self.get_W((i, j), n)) for n in empty_neighbors]
-                    adj[(i, j)] = empty_neighbors
+        for el in list(self.empty_cells.keys()):
+            empty_neighbors = self.get_empty_adiacent_cells(el, True)
+            empty_neighbors = [(n, self.get_W(el, n)) for n in empty_neighbors]
+            adj[el] = empty_neighbors
         return adj
 
     def get_W(self, actual_cell, adjacent_cell):

@@ -13,7 +13,7 @@ class Solver:
         self.metric = metric
 
     def __maximum_max_length(self, agent_path_length):
-        return agent_path_length + (self.istance.grid.grid.size - self.istance.grid.num_obstacles)
+        return agent_path_length + ((self.istance.grid.width + 1) * (self.istance.grid.height + 1) - self.istance.grid.num_obstacles)
 
     #distanza diagonale
     def __h(self, v: (int, int), goal: (int, int), select = 0):

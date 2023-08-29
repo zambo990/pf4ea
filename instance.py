@@ -3,6 +3,7 @@ from agents import Agents
 import matplotlib.pyplot as plt
 from timeit import default_timer as timer
 from path import Path
+import numpy as np
 
 class Instance:
 
@@ -16,7 +17,6 @@ class Instance:
 
 
         self.grid = grid
-        print("griglia generata")
 
         start = timer()
         self.init = init
@@ -28,10 +28,14 @@ class Instance:
         self.execution_time = end - start
 
     def plot(self):
+        grid = np.ones((self.grid.height + 1, self.grid.width + 1))
+        for (x, y) in list(self.grid.empty_cells.keys()):
+            grid[x, y] = 0
+
         plt.close('all')
         self.grid.plot(show=False)
         plt.title(
-            f'{self.grid.grid.shape[1]} x {self.grid.grid.shape[0]}\nObstacles: {self.grid.num_obstacles} / {self.grid.grid.size}')
+            f'{grid.shape[1]} x {grid.shape[0]}\nObstacles: {self.grid.num_obstacles} / {grid.size}')
 
         # stampo init e goal sulla griglia
         plt.plot(self.init[1] + 0.5, self.init[0] + 0.5, 'o', markersize=18, color='#ccc')
@@ -51,10 +55,14 @@ class Instance:
         plt.show(block=False)
 
     def plot_instant(self, t, solution: Path):
+        grid = np.ones((self.grid.height + 1, self.grid.width + 1))
+        for (x, y) in list(self.grid.empty_cells.keys()):
+            grid[x, y] = 0
+
         plt.close('all')
         self.grid.plot(show=False)
         plt.title(
-            f'{self.grid.grid.shape[1]} x {self.grid.grid.shape[0]} - Obstacles: {self.grid.num_obstacles} / {self.grid.grid.size}\nIstant={t}')
+            f'{grid.shape[1]} x {grid.shape[0]} - Obstacles: {self.grid.num_obstacles} / {grid.size}\nIstant={t}')
 
         # stampo init e goal sulla griglia
         plt.plot(self.init[1] + 0.5, self.init[0] + 0.5, 'o', markersize=18, color='#ccc')
