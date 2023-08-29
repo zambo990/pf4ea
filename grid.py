@@ -12,6 +12,10 @@ class Grid:
         start = timer()
 
         self.grid = np.zeros((height, width))
+        self.empty_cells = []
+        for i in range(height):
+            for j in range(width):
+                self.empty_cells += [(i, j)]
         self.height = height - 1
         self.width = width - 1
         self.obstacle_ratio = obstacle_percentage
@@ -29,28 +33,30 @@ class Grid:
         end = timer()
         self.execution_time = end - start
 
+    
     def __add_obstacles(self):
         obstacles = self.num_obstacles
         while obstacles > 0:
             (x, y) = self.get_random_empty_cell()
             self.grid[(x, y)] = 1
+            self.empty_cells.remove((x,y))
             obstacles -= 1
             obstacles = self.__add_conglomerated_obstacles((x,y), obstacles)
 
     def get_random_empty_cell(self):
-        x, y = np.random.randint(self.grid.shape[0]), np.random.randint(self.grid.shape[1])
-        while self.grid[x][y] == 1:
-            x, y = np.random.randint(self.grid.shape[0]), np.random.randint(self.grid.shape[1])
-        return x, y
+        index = np.random.randint(0, len(self.empty_cells))
+        return self.empty_cells[index]
 
 
     def __add_conglomerated_obstacles(self, actual_cell, obstacles: int):
         adjacent_cells = self.get_empty_adiacent_cells(actual_cell)
         while (obstacles > 0 and self.__conglomeration_probability() and
                len(adjacent_cells) > 0):
-            np.random.shuffle(adjacent_cells)
-            selected_adiacent = adjacent_cells.pop()
+            adjacent_cells = list(set(adjacent_cells)) #elimino elementi duplicati
+            index = np.random.randint(0, len(adjacent_cells))
+            selected_adiacent = adjacent_cells.pop(index)
             self.grid[selected_adiacent] = 1
+            self.empty_cells.remove(selected_adiacent)
             obstacles -= 1
             adjacent_cells += self.get_empty_adiacent_cells(selected_adiacent)
         return obstacles
@@ -64,9 +70,9 @@ class Grid:
             cells.append((actual_cell[0] - 1, actual_cell[1]))
         if actual_cell[0] < self.height: #prendo la cella a sud
             cells.append((actual_cell[0] + 1, actual_cell[1]))
-        if actual_cell[1] > 0: #prendo la cella a est
+        if actual_cell[1] > 0: #prendo la cella a ovest
             cells.append((actual_cell[0], actual_cell[1] - 1))
-        if actual_cell[1] < self.width: #prendo la cella a ovest
+        if actual_cell[1] < self.width: #prendo la cella a est
             cells.append((actual_cell[0], actual_cell[1] + 1))
 
         #il parametro diagonals serve per definire se prendere anche le celle in diagonale, utile per
@@ -85,9 +91,9 @@ class Grid:
     def get_empty_adiacent_cells(self, actual_cell, diagonals = False):
         cells = self.get_adjacent_cells(actual_cell, diagonals)
         empty_cells = []
-        for i in range(len(cells)):
-            if self.grid[cells[i]] == 0:
-                empty_cells.append(cells[i])
+        for el in cells:
+            if el in self.empty_cells:
+                empty_cells.append(el)
         return empty_cells
 
     def __conglomeration_probability(self):

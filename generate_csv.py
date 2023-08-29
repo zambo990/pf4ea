@@ -14,14 +14,14 @@ def get_memory_usage():
     return memory_info.rss  # (bytes)
 
 def get_record(width, height, obstacle_percentage, conglomeration_ratio, max_length, metric, time_limit, count):
+    istance = Instance(grid,
+                       init,
+                       goal,
+                       max_length_agents,
+                       num_agents)
+    resolver = Solver(istance, max_length, metric)
     try:
         with (timeout.time_limit(time_limit)):
-            istance = Instance(grid,
-                               init,
-                               goal,
-                               max_length_agents,
-                               num_agents)
-            resolver = Solver(istance, max_length, metric)
 
             start = timer()
             path, num_expanded_states, inserted_states = resolver.solve()
@@ -105,7 +105,7 @@ if __name__ == '__main__':
 
     n_iterarions = len(width_values) * len(height_values) * len(obstacle_percentage_values) * len(conglomeration_ratio_values) * len(max_length_agents_values) * len(num_agents_values) * len(max_length_values) * len(metric_values) * len(time_limit_values)
 
-    nome_file = "/Users/davidezambelli/Desktop/data.csv"
+    nome_file = "/Users/davidezambelli/Desktop/data2.csv"
     with open(nome_file, mode="w", newline="") as file_csv:
         writer = csv.writer(file_csv)
         head = ["id","outcome","width","height","obstacle_percentage","conglomeration_ratio","max_length_agents","num_agents","max_length","metric","time_limit","num_expanded_states","inserted_states","path_length","path_cost","num_waits","grid_time","istance_time","execution_time","memory_used"]
@@ -131,7 +131,7 @@ if __name__ == '__main__':
                                                                 metric, time_limit, count)
                                             file_csv.write(",".join(record) + "\n")
                                             print(record)
-                                            andamento = int(count / n_iterarions) * 100
+                                            andamento = int((count / n_iterarions) * 100)
                                             print(andamento, "%")
                                             if record[1] == "overlap":
                                                 overlap_count = 0

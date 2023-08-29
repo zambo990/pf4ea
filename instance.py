@@ -13,9 +13,12 @@ class Instance:
                  max_lenght_agents, #lunghezza massima dei percorsi casuali da generare per gli agenti pre-esistenti
                  num_agents):
 
-        start = timer()
+
 
         self.grid = grid
+        print("griglia generata")
+
+        start = timer()
         self.init = init
         self.goal = goal
         self.num_agents = num_agents

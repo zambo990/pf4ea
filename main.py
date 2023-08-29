@@ -49,9 +49,6 @@ def read_cell(messaggio, grid: Grid):
             print("Errore, l'input inserito non è nella forma richiesta, la forma richiesta è (x,y)")
 
 if __name__ == '__main__':
-    # TODO:
-    #  - sistemare il plotting in modo da non avere sovrapposizioni
-
 
 
     mode = read_number("Seleziona la modalità di generazione del problema:\n"
@@ -83,8 +80,8 @@ if __name__ == '__main__':
         time_limit = read_number("Inserire il tempo massimo, in secondi, accettabile per calcolare la soluzione del problema: ", 0, None, int)
 
     else:
-        width = 5
-        height = 5
+        width = 3
+        height = 2
         obstacle_percentage = 0.2
         conglomeration_ratio = 0.4
         grid = Grid(width, height, obstacle_percentage, conglomeration_ratio)
@@ -92,7 +89,7 @@ if __name__ == '__main__':
         init = grid.get_random_empty_cell()
         goal = grid.get_random_empty_cell()
 
-        max_length_agents = 3
+        max_length_agents = 1
         num_agents = 1
 
         max_length = 1000
