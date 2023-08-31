@@ -13,18 +13,20 @@ class Agents:
         self.paths = []
 
         self.build_paths()
+        self.num_agents = len(self.paths) # aggiorno il numero di agenti, nel caso in cui non fosse stato possibile generare tutti gli agenti
 
     def __build_path(self) -> Path:
         path = Path([self.__get_new_random_start()])
         if self.max_length == 0:
             length = 0
         else:
-            length = np.random.randint(1, self.max_length + 1) #genero un cammino di lunghezza casuale ma <= max_lenght
+            length = np.random.randint(0, self.max_length) #genero un cammino di lunghezza casuale ma <= max_lenght
 
         t = len(path) # rappresenta l'istante per cui devo selezionare la nuova cella nel percorso
         while t <= length:
             neighbors = self.grid.graph
             neighbors = neighbors[path[-1]][:]
+            neighbors = [el [0] for el in neighbors]
 
             for existing_path in self.paths:
                 # vincolo 1: all'istante t, la medesima cella non può essere occupata da 2 agenti distinti
@@ -51,32 +53,40 @@ class Agents:
             # elimino dalle celle adiacenti, tutte le celle già percorse, in modo da evitare backtracking
             for p in path:
                 for el in neighbors:
-                    if el[0] == p:
+                    if el == p:
                         neighbors.remove(el)
 
             if len(neighbors) != 0:
-                index = np.random.choice(range(len(neighbors)))
-                next_neighbor = neighbors[index][0]
+                index = np.random.choice(len(neighbors))
+                next_neighbor = neighbors[index]
                 path.append(next_neighbor)
                 t += 1
             else:
                 return path
         return path
 
-    def __get_new_random_start(self) -> (int, int): #metodo di fatto inutile, lasciato così in quanto risultato di re-factoring del codice
-        cell = self.grid.get_random_empty_cell()
-        #self.grid.empty_cells.remove(cell)
-        #del self.grid.empty_cells[cell]
-        return cell
+    def __get_new_random_start(self) -> (int, int):
+        empty_starts = list(self.grid.empty_cells.keys())
+        for el in self.starting_positions:
+            if el in empty_starts:
+                empty_starts.remove(el)
+        if len(empty_starts) > 0:
+            index = np.random.randint(0, len(empty_starts))
+            cell = empty_starts[index]
+            self.starting_positions.append(cell)
+            return cell
+        else:
+            return None
 
     def build_paths(self):
         for _ in range(self.num_agents):
-            if len(self.grid.empty_cells) > 0:
+            start_lenght = len(self.grid.empty_cells) - len(self.starting_positions)
+            if start_lenght > 0:
                 new_path = self.__build_path()
                 # while not self.__is_collision_free(new_path, self.paths):
                 #     print("entro")
                 #     new_path = self.__build_path()
-                self.starting_positions.append(new_path[0])
+                #self.starting_positions.append(new_path[0])
                 self.paths.append(new_path)
         return self.paths, self.starting_positions
 

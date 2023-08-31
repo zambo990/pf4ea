@@ -83,8 +83,8 @@ if __name__ == '__main__':
         time_limit = read_number("Inserire il tempo massimo, in secondi, accettabile per calcolare la soluzione del problema: ", 0, None, int)
 
     else:
-        width = 5
-        height = 4
+        width = 200
+        height = 200
         obstacle_percentage = 0.3
         conglomeration_ratio = 0.4
         grid = Grid(width, height, obstacle_percentage, conglomeration_ratio)
@@ -92,12 +92,12 @@ if __name__ == '__main__':
         init = grid.get_random_empty_cell()
         goal = grid.get_random_empty_cell()
 
-        max_length_agents = 2
-        num_agents = 3
+        max_length_agents = 10
+        num_agents = 10
 
         max_length = 1000
         metric = 0
-        time_limit = 100
+        time_limit = 1000
 
 
     try:
@@ -121,12 +121,13 @@ if __name__ == '__main__':
 
             #grid.print()
             istance.plot()
+            print(istance.agent_generator.paths)
 
             print("\n** Riassunto dell'istanza inserita: **")
             print("Dimensione griglia: ", width, " x ", height)
             print("Numero di celle attraversabili: ", width*height-int(width*height*obstacle_percentage))
             print("Percentuale di conglomerazione degli ostacoli: ", conglomeration_ratio, "%")
-            print("Numero di agenti pre-esistenti: ", num_agents)
+            print("Numero di agenti pre-esistenti: ", istance.agent_generator.num_agents)
             print("Lunghezza massima dei percorsi degli agenti pre-esistenti: ", max_length_agents)
             print("Massima lunghezza accettabile per il percorso soluzione: ", max_length)
             print("Cella di partenza: ", init)

@@ -42,15 +42,16 @@ class Instance:
         plt.plot(self.goal[1] + 0.5, self.goal[0] + 0.5, 's', markersize=18, color='#ccc')
 
         plt.gca().set_prop_cycle(None)
-        colors = ["red", "green", "blue", "purple", "orange", "pink", "cyan", "brown", "yellow"]
-        tMax = max([len(p) for p in self.agent_generator.paths])
-        for path in self.agent_generator.paths:
-            index = self.agent_generator.paths.index(path)
-            # quando il numero di agenti supera il numero di colori, andrò ad utilizzare gli stessi colori per agenti diversi
-            color = colors[index % (len(colors))]
-            for t in range(tMax + 1):
-                if t < len(path):
-                    plt.text(path[t][1] + 0.5, path[t][0] + 0.5, t, fontsize=12, color=color, ha='center', va='center')
+        if len(self.agent_generator.paths) > 0:
+            colors = ["red", "green", "blue", "purple", "orange", "pink", "cyan", "brown", "yellow"]
+            tMax = max([len(p) for p in self.agent_generator.paths])
+            for path in self.agent_generator.paths:
+                index = self.agent_generator.paths.index(path)
+                # quando il numero di agenti supera il numero di colori, andrò ad utilizzare gli stessi colori per agenti diversi
+                color = colors[index % (len(colors))]
+                for t in range(tMax + 1):
+                    if t < len(path):
+                        plt.text(path[t][1] + 0.5, path[t][0] + 0.5, t, fontsize=12, color=color, ha='center', va='center')
 
         plt.show(block=False)
 

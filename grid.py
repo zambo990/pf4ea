@@ -35,7 +35,7 @@ class Grid:
         grid = {}
         for i in range(height):
             for j in range(width):
-                grid[(i, j)] = 0
+                grid[(i, j)] = None
         return grid
     def __add_obstacles(self):
         obstacles = self.num_obstacles
