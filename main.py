@@ -6,6 +6,7 @@ from solver import Solver
 from timeit import default_timer as timer
 import psutil
 import re
+import platform
 
 def read_number(messaggio, min, max, type):
     while True:
@@ -52,7 +53,8 @@ def read_cell(messaggio, grid: Grid):
             print("Errore, l'input inserito non è nella forma richiesta, la forma richiesta è (x,y)")
 
 if __name__ == '__main__':
-
+    if platform.system() == "Windows":
+        print("Purtroppo non è stato possibile imporre un tempo massimo di cpu per l'esecuzione su Windows")
 
     mode = read_number("Seleziona la modalità di generazione del problema:\n"
                        "0: inserimento manuale dei parametri\n"
@@ -80,11 +82,13 @@ if __name__ == '__main__':
         metric = read_number("Seleziona la metrica da utilizzare:\n"
                              "0: distanza Euclidea\n"
                              "1: distanza di Chebyshev\n", 0, 1, int)
-        time_limit = read_number("Inserire il tempo massimo, in secondi, accettabile per calcolare la soluzione del problema: ", 0, None, int)
+        time_limit = 0
+        if platform.system() != "Windows":
+            time_limit = read_number("Inserire il tempo massimo, in secondi, accettabile per calcolare la soluzione del problema: ", 0, None, int)
 
     else:
-        width = 200
-        height = 200
+        width = 3
+        height = 3
         obstacle_percentage = 0.3
         conglomeration_ratio = 0.4
         grid = Grid(width, height, obstacle_percentage, conglomeration_ratio)
@@ -92,82 +96,133 @@ if __name__ == '__main__':
         init = grid.get_random_empty_cell()
         goal = grid.get_random_empty_cell()
 
-        max_length_agents = 10
-        num_agents = 10
+        max_length_agents = 3
+        num_agents = 2
 
         max_length = 1000
         metric = 0
-        time_limit = 1000
+        time_limit = 100
 
+    if platform.system() != "Windows":
+        try:
+            with timeout.time_limit(time_limit):
 
-    try:
-        with timeout.time_limit(time_limit):
+                istance = Instance(grid,
+                                   init,
+                                   goal,
+                                   max_length_agents,
+                                   num_agents)
+                # parametro metric:
+                # 0: distanza Euclidea
+                # 1: distanza di Chebyshev
+                resolver = Solver(istance, max_length, metric)
 
+                start = timer()
+                path, num_expanded_states, inserted_states = resolver.solve()
+                end = timer()
+                execution_time = end - start
 
-            istance = Instance(grid,
-                               init,
-                               goal,
-                               max_length_agents,
-                               num_agents)
-            # parametro metric:
-            # 0: distanza Euclidea
-            # 1: distanza di Chebyshev
-            resolver = Solver(istance, max_length, metric)
+                #grid.print()
+                istance.plot()
+                print(istance.agent_generator.paths)
 
-            start = timer()
-            path, num_expanded_states, inserted_states = resolver.solve()
-            end = timer()
-            execution_time = end - start
+                print("\n** Riassunto dell'istanza inserita: **")
+                print("Dimensione griglia: ", width, " x ", height)
+                print("Numero di celle attraversabili: ", width*height-int(width*height*obstacle_percentage))
+                print("Percentuale di conglomerazione degli ostacoli: ", conglomeration_ratio, "%")
+                print("Numero di agenti pre-esistenti: ", istance.agent_generator.num_agents)
+                print("Lunghezza massima dei percorsi degli agenti pre-esistenti: ", max_length_agents)
+                print("Massima lunghezza accettabile per il percorso soluzione: ", max_length)
+                print("Cella di partenza: ", init)
+                print("Cella di arrivo: ", goal)
+                metric_str = "Euclidea" if metric == 0 else "Chebyshev"
+                print("Metrica utilizzata: ", metric_str)
+                print("Limite massimo di tempo per la risoluzione del problema: ", time_limit, " secondi")
 
-            #grid.print()
-            istance.plot()
-            print(istance.agent_generator.paths)
+                print("\n** Esito dell'elaborazione: **")
+                if resolver.is_valid_start_stop():
+                    print("Percorso: ", path) if path is not None else print("Percorso: nessun percorso trovato")
+                else:
+                    print("Percorso: Init e/o Goal sono sovrapposti ad un agente o ad un ostacolo a causa della generazione casuale di alcuni parametri")
+                print("Numero di stati espansi: ", num_expanded_states)
+                print("Numero di stati inseriti: ", inserted_states)
+                print("Lunghezza del percorso: ", len(path) - 1) if path is not None else print("Lunghezza del percorso: 0")
+                print(f"Costo del percorso: {istance.grid.get_path_cost(path):.3f}") if path is not None else print(
+                    "Costo del percorso: 0")
+                print("Numero di mosse wait: ", istance.grid.get_num_waits(path)) if path is not None else print(
+                    "Numero di mosse wait: 0")
+                print(f"Tempo di generazione della griglia: {istance.grid.execution_time:.3f} s")
+                print(f"Tempo di generazione dell'istanza: {istance.execution_time:.3f} s")
+                print(f"Tempo di risoluzione del problema: {execution_time:.3f} s")
 
-            print("\n** Riassunto dell'istanza inserita: **")
-            print("Dimensione griglia: ", width, " x ", height)
-            print("Numero di celle attraversabili: ", width*height-int(width*height*obstacle_percentage))
-            print("Percentuale di conglomerazione degli ostacoli: ", conglomeration_ratio, "%")
-            print("Numero di agenti pre-esistenti: ", istance.agent_generator.num_agents)
-            print("Lunghezza massima dei percorsi degli agenti pre-esistenti: ", max_length_agents)
-            print("Massima lunghezza accettabile per il percorso soluzione: ", max_length)
-            print("Cella di partenza: ", init)
-            print("Cella di arrivo: ", goal)
-            metric_str = "Euclidea" if metric == 0 else "Chebyshev"
-            print("Metrica utilizzata: ", metric_str)
-            print("Limite massimo di tempo per la risoluzione del problema: ", time_limit, " secondi")
+                memory_used = get_memory_usage()
+                print(f"Memoria utilizzata: {memory_used / (1024 * 1024):.2f} MB")
 
-            print("\n** Esito dell'elaborazione: **")
-            if resolver.is_valid_start_stop():
-                print("Percorso: ", path) if path is not None else print("Percorso: nessun percorso trovato")
-            else:
-                print("Percorso: Init e/o Goal sono sovrapposti ad un agente o ad un ostacolo a causa della generazione casuale di alcuni parametri")
-            print("Numero di stati espansi: ", num_expanded_states)
-            print("Numero di stati inseriti: ", inserted_states)
-            print("Lunghezza del percorso: ", len(path) - 1) if path is not None else print("Lunghezza del percorso: 0")
-            print(f"Costo del percorso: {istance.grid.get_path_cost(path):.3f}") if path is not None else print(
-                "Costo del percorso: 0")
-            print("Numero di mosse wait: ", istance.grid.get_num_waits(path)) if path is not None else print(
-                "Numero di mosse wait: 0")
-            print(f"Tempo di generazione della griglia: {istance.grid.execution_time:.3f} s")
-            print(f"Tempo di generazione dell'istanza: {istance.execution_time:.3f} s")
-            print(f"Tempo di risoluzione del problema: {execution_time:.3f} s")
-
+        except timeout.TimeoutException:
+            print("Percorso: timeout, superato il tempo massimo per l'elaborazione")
+            print("Numero di stati espansi: 0")
+            print("Numero di stati inseriti: 0")
+            print("Lunghezza del percorso: 0")
+            print("Costo del percorso: 0")
+            print("Numero di mosse wait: 0")
+            print("Tempo di generazione della griglia: 0")
+            print("Tempo di generazione dell'istanza: 0")
+            print("Tempo di risoluzione del problema: 0")
             memory_used = get_memory_usage()
             print(f"Memoria utilizzata: {memory_used / (1024 * 1024):.2f} MB")
+            sys.exit(2)
+    else:
+        istance = Instance(grid,
+                           init,
+                           goal,
+                           max_length_agents,
+                           num_agents)
+        # parametro metric:
+        # 0: distanza Euclidea
+        # 1: distanza di Chebyshev
+        resolver = Solver(istance, max_length, metric)
 
-    except timeout.TimeoutException:
-        print("Percorso: timeout, superato il tempo massimo per l'elaborazione")
-        print("Numero di stati espansi: 0")
-        print("Numero di stati inseriti: 0")
-        print("Lunghezza del percorso: 0")
-        print("Costo del percorso: 0")
-        print("Numero di mosse wait: 0")
-        print("Tempo di generazione della griglia: 0")
-        print("Tempo di generazione dell'istanza: 0")
-        print("Tempo di risoluzione del problema: 0")
+        start = timer()
+        path, num_expanded_states, inserted_states = resolver.solve()
+        end = timer()
+        execution_time = end - start
+
+        # grid.print()
+        istance.plot()
+        print(istance.agent_generator.paths)
+
+        print("\n** Riassunto dell'istanza inserita: **")
+        print("Dimensione griglia: ", width, " x ", height)
+        print("Numero di celle attraversabili: ", width * height - int(width * height * obstacle_percentage))
+        print("Percentuale di conglomerazione degli ostacoli: ", conglomeration_ratio, "%")
+        print("Numero di agenti pre-esistenti: ", istance.agent_generator.num_agents)
+        print("Lunghezza massima dei percorsi degli agenti pre-esistenti: ", max_length_agents)
+        print("Massima lunghezza accettabile per il percorso soluzione: ", max_length)
+        print("Cella di partenza: ", init)
+        print("Cella di arrivo: ", goal)
+        metric_str = "Euclidea" if metric == 0 else "Chebyshev"
+        print("Metrica utilizzata: ", metric_str)
+
+        print("\n** Esito dell'elaborazione: **")
+        if resolver.is_valid_start_stop():
+            print("Percorso: ", path) if path is not None else print("Percorso: nessun percorso trovato")
+        else:
+            print(
+                "Percorso: Init e/o Goal sono sovrapposti ad un agente o ad un ostacolo a causa della generazione casuale di alcuni parametri")
+        print("Numero di stati espansi: ", num_expanded_states)
+        print("Numero di stati inseriti: ", inserted_states)
+        print("Lunghezza del percorso: ", len(path) - 1) if path is not None else print("Lunghezza del percorso: 0")
+        print(f"Costo del percorso: {istance.grid.get_path_cost(path):.3f}") if path is not None else print(
+            "Costo del percorso: 0")
+        print("Numero di mosse wait: ", istance.grid.get_num_waits(path)) if path is not None else print(
+            "Numero di mosse wait: 0")
+        print(f"Tempo di generazione della griglia: {istance.grid.execution_time:.3f} s")
+        print(f"Tempo di generazione dell'istanza: {istance.execution_time:.3f} s")
+        print(f"Tempo di risoluzione del problema: {execution_time:.3f} s")
+
         memory_used = get_memory_usage()
         print(f"Memoria utilizzata: {memory_used / (1024 * 1024):.2f} MB")
-        sys.exit(2)
+
 
     if path is not None:
         t = 0
@@ -175,3 +230,4 @@ if __name__ == '__main__':
             t = read_number("\nInserire l'istante di cui si desidera visualizzare la situazione della griglia\n"
                             "Oppure digitare -1 per terminare il programma: ", -1, len(path) - 1, int)
             istance.plot_instant(t, path)
+

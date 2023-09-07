@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/pf4ea.iml" filepath="$PROJECT_DIR$/.idea/pf4ea.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../progetto_rava/.idea/progetto_rava.iml" filepath="$PROJECT_DIR$/../progetto_rava/.idea/progetto_rava.iml" />
     </modules>
   </component>
 </project>

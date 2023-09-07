@@ -85,6 +85,11 @@ class Grid:
                 cells.append((actual_cell[0] - 1, actual_cell[1] + 1))
             if actual_cell[0] < self.height and actual_cell[1] < self.width: #prendo la cella a sud-est
                 cells.append((actual_cell[0] + 1, actual_cell[1] + 1))
+
+            # ****** CORREZIONE BUG ******** #
+            cells.append((actual_cell[0], actual_cell[1])) #aggiungo la cella stessa alla lista, così da poter fare la mossa wait
+            # ****************************** #
+
         return dict.fromkeys(cells)
 
     def get_empty_adiacent_cells(self, actual_cell, diagonals = False):
