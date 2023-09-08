@@ -87,8 +87,8 @@ if __name__ == '__main__':
             time_limit = read_number("Inserire il tempo massimo, in secondi, accettabile per calcolare la soluzione del problema: ", 0, None, int)
 
     else:
-        width = 3
-        height = 3
+        width = 5
+        height = 5
         obstacle_percentage = 0.3
         conglomeration_ratio = 0.4
         grid = Grid(width, height, obstacle_percentage, conglomeration_ratio)

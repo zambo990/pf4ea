@@ -22,11 +22,11 @@ class Agents:
         else:
             length = np.random.randint(0, self.max_length) #genero un cammino di lunghezza casuale ma <= max_lenght
 
-        t = len(path) # rappresenta l'istante per cui devo selezionare la nuova cella nel percorso
+        t = len(path) # rappresenta l'istante per cui devo selezionare la nuova cella nel percorso, in questo caso ottengo sempre 1
         while t <= length:
-            neighbors = self.grid.graph
-            neighbors = neighbors[path[-1]][:]
-            neighbors = [el [0] for el in neighbors]
+            neighbors = self.grid.graph #prendo la lista di adiacenza
+            neighbors = neighbors[path[-1]][:] #prendo la lista di adiacenza per l'elemento all'istante t-1
+            neighbors = [el [0] for el in neighbors] # elimino i costi
 
             for existing_path in self.paths:
                 # vincolo 1: all'istante t, la medesima cella non può essere occupata da 2 agenti distinti
@@ -67,7 +67,7 @@ class Agents:
 
     def __get_new_random_start(self) -> (int, int):
         empty_starts = list(self.grid.empty_cells.keys())
-        for el in self.starting_positions:
+        for el in self.starting_positions: #evito di selezionare una cella di partenza già occupata da un altro agente
             if el in empty_starts:
                 empty_starts.remove(el)
         if len(empty_starts) > 0:
@@ -81,12 +81,8 @@ class Agents:
     def build_paths(self):
         for _ in range(self.num_agents):
             start_lenght = len(self.grid.empty_cells) - len(self.starting_positions)
-            if start_lenght > 0:
+            if start_lenght > 0: #verifico di avere ancora celle libere per generare un nuovo agente
                 new_path = self.__build_path()
-                # while not self.__is_collision_free(new_path, self.paths):
-                #     print("entro")
-                #     new_path = self.__build_path()
-                #self.starting_positions.append(new_path[0])
                 self.paths.append(new_path)
         return self.paths, self.starting_positions
 
